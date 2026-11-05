@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin_backup/
+Disallow: /uploads/
+# TODO: eliminar backup antiguo antes de produccion

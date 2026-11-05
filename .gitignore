@@ -1,0 +1,23 @@
+
+# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+
+# Dependencias y archivos temporales
+vendor/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+
+# Archivos de desarrollo
+.vscode/
+.idea/
+*.tmp
+*.bak
+
+# Archivos comprimidos y respaldos locales
+*.zip
+*.rar
+*.7z

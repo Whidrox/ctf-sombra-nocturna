@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  sombra-nocturna-c2:
+    build: .
+    container_name: ctf_sombra_v2
+    ports:
+      - "8082:8082"
+      - "21:21"
+      - "21100-21110:21100-21110"
+    restart: always
+    networks:
+      - lab-red
+
+networks:
+  lab-red:
+    driver: bridge
