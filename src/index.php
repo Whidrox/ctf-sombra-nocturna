@@ -31,6 +31,18 @@ if (isset($_POST['submit'])) {
         $message = "Error en la transmisión del manifiesto.";
     }
 }
+
+// Buscador de manifiestos por código de envío.
+// VULNERABILIDAD: $q se refleja tal cual, sin htmlspecialchars() ni
+// ninguna sanitización -> XSS reflejado clásico (F17).
+$search_result = '';
+if (isset($_GET['q']) && $_GET['q'] !== '') {
+    $q = $_GET['q'];
+    $search_result = "Resultados de búsqueda para: " . $q;
+    if (stripos($q, '<script') !== false || preg_match('/on\w+\s*=/i', $q)) {
+        $search_result .= "<br><span class='audit'>[AUDITORIA] Payload de script reflejado sin sanitizar &rarr; CTF{f17_xss_reflejado_busqueda_2026}</span>";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -96,6 +108,19 @@ if (isset($_POST['submit'])) {
     </aside>
 
   </div>
+
+  <section class="panel" style="margin-top: 28px;">
+    <h2>Buscar manifiesto por código de envío</h2>
+    <form method="get" class="field">
+      <input type="text" name="q" placeholder="Ej: ENV-2026-0472" value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>">
+      <input type="hidden" name="role" value="<?php echo htmlspecialchars($_GET['role']); ?>">
+      <button type="submit" class="btn" style="width:auto; margin-top:12px;">Buscar</button>
+    </form>
+    <?php if ($search_result !== ''): ?>
+      <p class="alert" role="status"><?php echo $search_result; ?></p>
+    <?php endif; ?>
+  </section>
+
 </main>
 
 <footer class="site-footer">

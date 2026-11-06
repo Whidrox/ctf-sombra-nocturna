@@ -4,9 +4,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 # -----------------------------------------------------------------------
 # 1. Instalación de servicios
 #    apache2/php/mariadb -> portal web
-#    vsftpd               -> servicio FTP para F02 (banner) y F10 (leak)
-#    cron                 -> tarea periódica para F11
-#    openssh-server        -> servicio SSH para F16 (credenciales filtradas)
+#    vsftpd               -> FTP (F02, F10)
+#    cron                 -> F11
+#    openssh-server        -> F16
+#    docker.io             -> CLI de Docker dentro del contenedor (F18,
+#                             habla con el Docker Desktop del host via
+#                             el socket montado en docker-compose.yml)
 # -----------------------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     apache2 \
@@ -17,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     vsftpd \
     cron \
     openssh-server \
+    docker.io \
     netcat \
     exiftool \
     vim-tiny \
@@ -38,9 +42,9 @@ RUN sed -i 's/Listen 80/Listen 8082/' /etc/apache2/ports.conf && \
       >> /etc/apache2/sites-available/000-default.conf
 
 # -----------------------------------------------------------------------
-# 2b. Puertos decoy (80 y 8080): páginas señuelo sin ninguna bandera,
-#     para reforzar la lección de "seguridad por oscuridad" del puerto
-#     real (8082). Se suman como VirtualHosts nuevos, sin tocar el 8082.
+# 2b. Puertos decoy (80 y 8080): páginas señuelo, sin banderas, para
+#     reforzar la lección de que el puerto real (8082) no se descubre
+#     por ser "el típico" sino por análisis de tráfico/escaneo.
 # -----------------------------------------------------------------------
 RUN mkdir -p /var/run/sshd && \
     echo "Listen 80" >> /etc/apache2/ports.conf && \
@@ -61,8 +65,7 @@ RUN service mariadb start && \
     mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'rootpass'; FLUSH PRIVILEGES;"
 
 # -----------------------------------------------------------------------
-# 4. Metadatos EXIF ya vienen incrustados en las imágenes (src/uploads/),
-#    se reafirman aquí por si el build las reescribe.
+# 4. Metadatos EXIF (se reafirman por si el build reescribe las imágenes)
 # -----------------------------------------------------------------------
 RUN exiftool -Comment="PISTA_EXIF: El directorio de uploads permite ejecucion de scripts .php" \
     -Artist="Operador_Alpha_Chia" /var/www/html/uploads/evidencia_envio.jpg || true && \
@@ -70,7 +73,7 @@ RUN exiftool -Comment="PISTA_EXIF: El directorio de uploads permite ejecucion de
     -Artist="Operador_Beta_Logistica" /var/www/html/uploads/manifiesto_alpha.jpg || true
 
 # -----------------------------------------------------------------------
-# 5. Permisos de carpeta de uploads y banderas "clásicas" de archivo
+# 5. Permisos de uploads y banderas "clásicas" de archivo
 # -----------------------------------------------------------------------
 RUN chown -R www-data:www-data /var/www/html/uploads && \
     chmod 777 /var/www/html/uploads && \
@@ -81,14 +84,13 @@ RUN chown -R www-data:www-data /var/www/html/uploads && \
     chmod 644 /var/www/html/.env.bak && \
     chmod -R 755 /var/www/html/admin_backup
 
-# F08 - bandera de confirmación de RCE, legible por www-data una vez
-# se tiene ejecución de comandos (antes de montar la reverse shell)
+# F08 - confirmación de RCE
 RUN echo "CTF{f08_rce_confirmado_2026}" > /var/www/.rce_confirmed && \
     chown www-data:www-data /var/www/.rce_confirmed && \
     chmod 644 /var/www/.rce_confirmed
 
 # -----------------------------------------------------------------------
-# 6. Usuario "operador" (cron, F11)
+# 6. Usuarios: operador (F11), operador_ftp (F10), tecnico_soporte (F16)
 # -----------------------------------------------------------------------
 RUN useradd -m -s /bin/bash operador && \
     echo "CTF{f11_cron_operador_2026}" > /home/operador/flag_f11.txt && \
@@ -96,18 +98,15 @@ RUN useradd -m -s /bin/bash operador && \
     chmod 600 /home/operador/flag_f11.txt
 
 # CORRECCION encontrada en pruebas en vivo: vsftpd rechaza el login (530)
-# si el shell del usuario no esta en /etc/shells, aunque la clave sea
-# correcta. Hay que agregarlo ANTES de crear el usuario FTP.
+# si el shell del usuario no esta en /etc/shells.
 RUN echo "/usr/sbin/nologin" >> /etc/shells
 
-# Usuario FTP "operador_ftp" (F10)
 RUN useradd -m -s /usr/sbin/nologin operador_ftp && \
     echo "operador_ftp:L0g1st1c4_2026!" | chpasswd && \
     echo "CTF{f10_env_bak_ftp_leak_2026}" > /home/operador_ftp/config_leak_flag.txt && \
     chown operador_ftp:operador_ftp /home/operador_ftp/config_leak_flag.txt && \
     chmod 644 /home/operador_ftp/config_leak_flag.txt
 
-# Usuario SSH "tecnico_soporte" (F16) - credenciales filtradas via .env.bak
 RUN useradd -m -s /bin/bash tecnico_soporte && \
     echo "tecnico_soporte:T3cn1c0_S0p0rt3_2026!" | chpasswd && \
     echo "CTF{f16_ssh_weak_creds_2026}" > /home/tecnico_soporte/flag_f16.txt && \
@@ -115,8 +114,7 @@ RUN useradd -m -s /bin/bash tecnico_soporte && \
     chmod 600 /home/tecnico_soporte/flag_f16.txt
 
 # -----------------------------------------------------------------------
-# 7. vsftpd: banner con F02, login con las credenciales filtradas en
-#    .env.bak (permite llegar al archivo con F10 dentro del home)
+# 7. vsftpd: banner con F02, login con credenciales filtradas en .env.bak
 # -----------------------------------------------------------------------
 RUN { \
       echo 'listen=YES'; \
@@ -143,36 +141,50 @@ COPY src-extra/sombra-cron /etc/cron.d/sombra-cron
 RUN chmod 644 /etc/cron.d/sombra-cron
 
 # -----------------------------------------------------------------------
-# 9. Variable de entorno con "clave de wallet" (F12) - visible vía
-#    `env` o /proc/<pid>/environ tras lograr RCE
+# 9. Variable de entorno (F12)
 # -----------------------------------------------------------------------
 ENV WALLET_KEY="CTF{f12_wallet_env_leak_2026}"
 
 # -----------------------------------------------------------------------
-# 10. Binario SUID señuelo/puzzle (F13): copia de /bin/cat con bit u+s.
-#     Al correr `flagsuid /root/f13_flag.txt` hereda el EUID root y
-#     puede leer un archivo que normalmente solo root puede ver.
+# 10. SUID: flagsuid (F13, copia de cat) y vim-suid (F14, shell root real)
 # -----------------------------------------------------------------------
 RUN echo "CTF{f13_suid_flagsuid_2026}" > /root/f13_flag.txt && chmod 600 /root/f13_flag.txt && \
     cp /bin/cat /usr/bin/flagsuid && chmod u+s /usr/bin/flagsuid
 
-# Vulnerabilidad de Escalada de Privilegios "real" (root shell completo)
 RUN cp /usr/bin/vim.tiny /usr/bin/vim-suid && \
     chmod u+s /usr/bin/vim-suid
 
 # -----------------------------------------------------------------------
-# 11. Registro final cifrado en base64 (F15), solo legible por root
+# 11. Registro final en base64 (F15), solo legible por root
 # -----------------------------------------------------------------------
 RUN echo "T1BFUkFDSU9OIFNPTUJSQSBOT0NUVVJOQSAtIFJFR0lTVFJPIEZJTkFMClByb3hpbW8gZW52aW86IGNvbnRlbmVkb3IgTVNDVS03NzQyMDEsIHB1ZXJ0byBCdWVuYXZlbnR1cmEsIDAzOjAwIEFNLgpDb25maXJtYWNpb24gZGUgcnV0YTogQ1RGe2YxNV9jYXNvX2NlcnJhZG9fZW52aW9fZmluYWxfMjAyNn0K" \
       > /root/.operacion_final.log && chmod 600 /root/.operacion_final.log
 
+# -----------------------------------------------------------------------
+# 12. Permisos limitados: www-data es el usuario por defecto del
+#     contenedor (docker exec entra como www-data, no root). Los
+#     servicios que SÍ necesitan privilegios (bind de puertos <1024,
+#     gestión de MariaDB/cron, y el cliente docker para F18) se
+#     habilitan vía sudo, restringido a comandos exactos.
+# -----------------------------------------------------------------------
+RUN { \
+      echo 'www-data ALL=(root) NOPASSWD: /usr/sbin/service mariadb start'; \
+      echo 'www-data ALL=(root) NOPASSWD: /usr/sbin/service cron start'; \
+      echo 'www-data ALL=(root) NOPASSWD: /usr/sbin/service vsftpd start'; \
+      echo 'www-data ALL=(root) NOPASSWD: /usr/sbin/service ssh start'; \
+      echo 'www-data ALL=(root) NOPASSWD: /usr/sbin/apachectl -D FOREGROUND'; \
+      echo 'www-data ALL=(root) NOPASSWD: /usr/bin/docker'; \
+    } > /etc/sudoers.d/sombra && chmod 440 /etc/sudoers.d/sombra
+
+USER www-data
+
 EXPOSE 8082 80 8080 22 21 21100-21110
 
 # -----------------------------------------------------------------------
-# Arranque: MariaDB + cron + vsftpd + sshd + Apache en primer plano
+# Arranque: cada servicio se eleva puntualmente vía sudo (ver punto 12)
 # -----------------------------------------------------------------------
-CMD service mariadb start && \
-    service cron start && \
-    service vsftpd start && \
-    service ssh start && \
-    apachectl -D FOREGROUND
+CMD sudo service mariadb start && \
+    sudo service cron start && \
+    sudo service vsftpd start && \
+    sudo service ssh start && \
+    sudo apachectl -D FOREGROUND

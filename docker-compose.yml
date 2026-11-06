@@ -10,10 +10,26 @@ services:
       - "22:22"
       - "21:21"
       - "21100-21110:21100-21110"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: always
     networks:
       - lab-red
+    depends_on:
+      - vault-init
+
+  vault-init:
+    image: alpine:3.19
+    container_name: sombra_vault_init
+    volumes:
+      - sombra_vault:/data
+    command: >
+      sh -c "echo 'CTF{f18_docker_socket_escape_2026}' > /data/flag_f18.txt && chmod 644 /data/flag_f18.txt"
+    restart: "no"
 
 networks:
   lab-red:
     driver: bridge
+
+volumes:
+  sombra_vault:
