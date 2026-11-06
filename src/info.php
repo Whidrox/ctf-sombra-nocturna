@@ -99,6 +99,15 @@ $num_categorias = count($categorias);
   <h1>Expediente: Operación Sombra Nocturna</h1>
 
   <section class="panel">
+    <h2>Transmisión de bienvenida</h2>
+    <video controls playsinline preload="metadata" style="width:100%;border-radius:6px;display:block;background:#000;">
+      <source src="assets/Video_intro.mp4" type="video/mp4">
+      Tu navegador no puede reproducir el video.
+      <a href="assets/Video_intro.mp4">Descárgalo aquí</a>.
+    </video>
+  </section>
+
+  <section class="panel" style="margin-top: 28px;">
     <h2>Briefing de la misión</h2>
     <p>La organización conocida como <strong>"Sombra Nocturna"</strong> coordina una red de logística
        de contrabando desde un portal de mando y control (C3I). Durante meses movieron cargamentos

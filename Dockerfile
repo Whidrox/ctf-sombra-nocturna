@@ -60,6 +60,7 @@ RUN mkdir -p /var/run/sshd && \
 # 3. Copiar la aplicación web y la base de datos
 # -----------------------------------------------------------------------
 COPY src/ /var/www/html/
+RUN rm -f /var/www/html/index.html
 RUN service mariadb start && \
     mysql -u root < /var/www/html/db.sql && \
     mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'rootpass'; FLUSH PRIVILEGES;"
