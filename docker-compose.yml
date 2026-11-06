@@ -1,8 +1,9 @@
-version: '3.8'
+
 services:
   sombra-nocturna-c2:
     build: .
-    container_name: ctf_sombra_v2
+    image: ctf-sombra:latest
+    container_name: ctf_sombra
     ports:
       - "8082:8082"
       - "80:80"
@@ -33,3 +34,4 @@ networks:
 
 volumes:
   sombra_vault:
+    name: sombra_vault
