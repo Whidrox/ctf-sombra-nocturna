@@ -1,5 +1,9 @@
 <?php
 // src/login.php - Formulario con SQL Injection clásica en el campo usuario
+session_start();
+$progreso = isset($_SESSION['encontradas']) ? count($_SESSION['encontradas']) : 0;
+$TOTAL_BANDERAS = 18;
+
 require_once 'db.php';
 
 $message = '';
@@ -70,5 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <p>&copy; 2026 <strong>Sergio Alexander Prieto Castiblanco</strong> y <strong>Laura Valentina Bautista Vargas</strong>. Todos los derechos reservados.</p>
   <p>Universidad de Cundinamarca, extensión Chía. Hacking Ético.</p>
 </footer>
+
+<a href="validar.php" style="position:fixed;right:20px;bottom:20px;z-index:50;padding:12px 18px;background:#38bdf8;color:#04121f;font-weight:700;border-radius:6px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.4);">Validar banderas (<?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?>)</a>
+
 </body>
 </html>
