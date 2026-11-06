@@ -77,6 +77,8 @@ $hechas = count($_SESSION['encontradas']);
   <div class="session">
     <span>Progreso</span>
     <strong class="role"><?php echo $hechas; ?> / <?php echo $TOTAL; ?></strong>
+    <a class="logout" href="javascript:history.back()">Volver</a>
+    <a class="logout" href="login.php">Salir</a>
   </div>
 </header>
 

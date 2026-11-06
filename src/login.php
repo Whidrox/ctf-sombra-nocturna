@@ -75,7 +75,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <p>Universidad de Cundinamarca, extensión Chía. Hacking Ético.</p>
 </footer>
 
-<a href="validar.php" style="position:fixed;right:20px;bottom:20px;z-index:50;padding:12px 18px;background:#38bdf8;color:#04121f;font-weight:700;border-radius:6px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.4);">Validar banderas (<?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?>)</a>
+<div style="position:fixed;right:20px;bottom:20px;z-index:50;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+  <a href="info.php" style="padding:12px 18px;background:#0a1f44;color:#e4ecf7;border:1px solid #38bdf8;font-weight:700;border-radius:6px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.4);">Sobre el reto</a>
+  <a href="validar.php" style="padding:12px 18px;background:#38bdf8;color:#04121f;font-weight:700;border-radius:6px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.4);">Validar banderas (<?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?>)</a>
+</div>
 
 </body>
 </html>
