@@ -3,10 +3,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # -----------------------------------------------------------------------
 # 1. Instalación de servicios
-#    apache2/php/mariadb -> portal web (ya existía)
-#    vsftpd              -> servicio FTP para F02 (banner) y F10 (leak)
-#    cron                -> tarea periódica para F11
-#    exiftool, netcat, vim-tiny, sudo -> igual que antes
+#    apache2/php/mariadb -> portal web
+#    vsftpd               -> servicio FTP para F02 (banner) y F10 (leak)
+#    cron                 -> tarea periódica para F11
+#    openssh-server        -> servicio SSH para F16 (credenciales filtradas)
 # -----------------------------------------------------------------------
 RUN apt-get update && apt-get install -y \
     apache2 \
@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     mariadb-server \
     vsftpd \
     cron \
+    openssh-server \
     netcat \
     exiftool \
     vim-tiny \
@@ -23,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------------------
-# 2. Apache: puerto no estándar 8082 + mod_headers (para F01) +
+# 2. Apache: puerto no estándar 8082 (app real) + mod_headers (F01) +
 #    ejecución de extensiones PHP alternativas (para que F07 sea real)
 # -----------------------------------------------------------------------
 RUN sed -i 's/Listen 80/Listen 8082/' /etc/apache2/ports.conf && \
@@ -35,6 +36,21 @@ RUN sed -i 's/Listen 80/Listen 8082/' /etc/apache2/ports.conf && \
     a2enconf php-alt-ext && \
     echo 'Header always set X-Internal-Note "CTF{f01_recon_passivo_pcap_2026}"' \
       >> /etc/apache2/sites-available/000-default.conf
+
+# -----------------------------------------------------------------------
+# 2b. Puertos decoy (80 y 8080): páginas señuelo sin ninguna bandera,
+#     para reforzar la lección de "seguridad por oscuridad" del puerto
+#     real (8082). Se suman como VirtualHosts nuevos, sin tocar el 8082.
+# -----------------------------------------------------------------------
+RUN mkdir -p /var/run/sshd && \
+    echo "Listen 80" >> /etc/apache2/ports.conf && \
+    echo "Listen 8080" >> /etc/apache2/ports.conf && \
+    mkdir -p /var/www/decoy80 /var/www/decoy8080 && \
+    echo '<html><body><h1>It works!</h1><p>Apache2 Ubuntu Default Page.</p></body></html>' > /var/www/decoy80/index.html && \
+    echo '<html><body><h1>Mantenimiento programado</h1><p>El servicio estara disponible pronto.</p></body></html>' > /var/www/decoy8080/index.html && \
+    printf '<VirtualHost *:80>\n    DocumentRoot /var/www/decoy80\n</VirtualHost>\n' > /etc/apache2/sites-available/decoy80.conf && \
+    printf '<VirtualHost *:8080>\n    DocumentRoot /var/www/decoy8080\n</VirtualHost>\n' > /etc/apache2/sites-available/decoy8080.conf && \
+    a2ensite decoy80 && a2ensite decoy8080
 
 # -----------------------------------------------------------------------
 # 3. Copiar la aplicación web y la base de datos
@@ -72,19 +88,31 @@ RUN echo "CTF{f08_rce_confirmado_2026}" > /var/www/.rce_confirmed && \
     chmod 644 /var/www/.rce_confirmed
 
 # -----------------------------------------------------------------------
-# 6. Usuario "operador" (cron, F11) y usuario FTP "operador_ftp" (F10)
+# 6. Usuario "operador" (cron, F11)
 # -----------------------------------------------------------------------
 RUN useradd -m -s /bin/bash operador && \
     echo "CTF{f11_cron_operador_2026}" > /home/operador/flag_f11.txt && \
     chown operador:operador /home/operador/flag_f11.txt && \
     chmod 600 /home/operador/flag_f11.txt
 
+# CORRECCION encontrada en pruebas en vivo: vsftpd rechaza el login (530)
+# si el shell del usuario no esta en /etc/shells, aunque la clave sea
+# correcta. Hay que agregarlo ANTES de crear el usuario FTP.
 RUN echo "/usr/sbin/nologin" >> /etc/shells
+
+# Usuario FTP "operador_ftp" (F10)
 RUN useradd -m -s /usr/sbin/nologin operador_ftp && \
     echo "operador_ftp:L0g1st1c4_2026!" | chpasswd && \
     echo "CTF{f10_env_bak_ftp_leak_2026}" > /home/operador_ftp/config_leak_flag.txt && \
     chown operador_ftp:operador_ftp /home/operador_ftp/config_leak_flag.txt && \
     chmod 644 /home/operador_ftp/config_leak_flag.txt
+
+# Usuario SSH "tecnico_soporte" (F16) - credenciales filtradas via .env.bak
+RUN useradd -m -s /bin/bash tecnico_soporte && \
+    echo "tecnico_soporte:T3cn1c0_S0p0rt3_2026!" | chpasswd && \
+    echo "CTF{f16_ssh_weak_creds_2026}" > /home/tecnico_soporte/flag_f16.txt && \
+    chown tecnico_soporte:tecnico_soporte /home/tecnico_soporte/flag_f16.txt && \
+    chmod 600 /home/tecnico_soporte/flag_f16.txt
 
 # -----------------------------------------------------------------------
 # 7. vsftpd: banner con F02, login con las credenciales filtradas en
@@ -138,12 +166,13 @@ RUN cp /usr/bin/vim.tiny /usr/bin/vim-suid && \
 RUN echo "T1BFUkFDSU9OIFNPTUJSQSBOT0NUVVJOQSAtIFJFR0lTVFJPIEZJTkFMClByb3hpbW8gZW52aW86IGNvbnRlbmVkb3IgTVNDVS03NzQyMDEsIHB1ZXJ0byBCdWVuYXZlbnR1cmEsIDAzOjAwIEFNLgpDb25maXJtYWNpb24gZGUgcnV0YTogQ1RGe2YxNV9jYXNvX2NlcnJhZG9fZW52aW9fZmluYWxfMjAyNn0K" \
       > /root/.operacion_final.log && chmod 600 /root/.operacion_final.log
 
-EXPOSE 8082 21 21100-21110
+EXPOSE 8082 80 8080 22 21 21100-21110
 
 # -----------------------------------------------------------------------
-# Arranque: MariaDB + cron + vsftpd + Apache en primer plano
+# Arranque: MariaDB + cron + vsftpd + sshd + Apache en primer plano
 # -----------------------------------------------------------------------
 CMD service mariadb start && \
     service cron start && \
     service vsftpd start && \
+    service ssh start && \
     apachectl -D FOREGROUND
