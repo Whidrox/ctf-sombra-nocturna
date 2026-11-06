@@ -1,5 +1,9 @@
 <?php
 // src/index.php - Panel de Gestión de Manifiestos
+session_start();
+$progreso = isset($_SESSION['encontradas']) ? count($_SESSION['encontradas']) : 0;
+$TOTAL_BANDERAS = 18;
+
 if (!isset($_GET['role'])) {
     header("Location: login.php");
     exit();
@@ -13,9 +17,6 @@ if (isset($_POST['submit'])) {
     $target_file = $target_dir . $filename;
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-    // VULNERABILIDAD: blacklist incompleta. Bloquea ".php" exacto,
-    // pero Apache (ver Dockerfile / mod_php) también ejecuta estas
-    // extensiones alternativas como PHP -> filtro evadible.
     $blacklist = ['php'];
     $bypass_exts = ['phtml', 'php3', 'php4', 'php5', 'pht'];
 
@@ -24,7 +25,6 @@ if (isset($_POST['submit'])) {
     } elseif (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
         $message = "Evidencia/Manifiesto cargado exitosamente en: <a href='$target_file'>$target_file</a>";
         if (in_array($ext, $bypass_exts)) {
-            // F07 - bypass de filtro de extensión confirmado
             $message .= "<br><span class='audit'>[AUDITORIA] Extensión alternativa aceptada por el servidor &rarr; CTF{f07_filtro_extension_bypass_2026}</span>";
         }
     } else {
@@ -32,9 +32,7 @@ if (isset($_POST['submit'])) {
     }
 }
 
-// Buscador de manifiestos por código de envío.
-// VULNERABILIDAD: $q se refleja tal cual, sin htmlspecialchars() ni
-// ninguna sanitización -> XSS reflejado clásico (F17).
+// F17 - XSS reflejado
 $search_result = '';
 if (isset($_GET['q']) && $_GET['q'] !== '') {
     $q = $_GET['q'];
@@ -70,6 +68,7 @@ if (isset($_GET['q']) && $_GET['q'] !== '') {
   <div class="session">
     <span>Sesión activa como</span>
     <strong class="role"><?php echo htmlspecialchars($_GET['role']); ?></strong>
+    <a class="logout" href="validar.php">Banderas <?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?></a>
     <a class="logout" href="login.php">Cerrar sesión</a>
   </div>
 </header>
