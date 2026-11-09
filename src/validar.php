@@ -1,6 +1,7 @@
 <?php
 // src/validar.php - Validador de banderas del laboratorio Operación Sombra Nocturna
 session_start();
+require_once 'ui.php';
 
 // Hashes SHA-256 de las 18 banderas (no se guardan en texto plano).
 $BANDERAS = [
@@ -31,11 +32,14 @@ if (!isset($_SESSION['encontradas'])) {
 
 $feedback = '';
 $feedback_ok = false;
+$resultado = '';      // solo para animaciones: new | dup | bad | empty
+$codigo_nuevo = '';
 
 if (isset($_POST['bandera'])) {
     $entrada = trim($_POST['bandera']);
     if ($entrada === '') {
         $feedback = 'Ingresa una bandera para validar.';
+        $resultado = 'empty';
     } else {
         $hash = hash('sha256', $entrada);
         if (isset($BANDERAS[$hash])) {
@@ -43,86 +47,154 @@ if (isset($_POST['bandera'])) {
             if (in_array($hash, $_SESSION['encontradas'])) {
                 $feedback = "Bandera correcta ($reto), pero ya la habías registrado.";
                 $feedback_ok = true;
+                $resultado = 'dup';
             } else {
                 $_SESSION['encontradas'][] = $hash;
                 $feedback = "¡Bandera correcta! Reto resuelto: $reto";
                 $feedback_ok = true;
+                $resultado = 'new';
+                $codigo_nuevo = substr($reto, 0, 3);
             }
         } else {
             $feedback = 'Bandera incorrecta. Verifica el formato CTF{...} y vuelve a intentarlo.';
+            $resultado = 'bad';
         }
     }
 }
 
 $hechas = count($_SESSION['encontradas']);
+
+// Códigos ya resueltos (F01, F02...) para pintar el tablero
+$resueltos = [];
+foreach ($_SESSION['encontradas'] as $h) {
+    if (isset($BANDERAS[$h])) { $resueltos[substr($BANDERAS[$h], 0, 3)] = true; }
+}
+$rango = sn_rango($hechas);
+$completo = ($hechas === $TOTAL);
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sombra Nocturna - Validador de banderas</title>
-<link rel="icon" type="image/png" href="assets/escudo-udec.png">
-<link rel="stylesheet" href="assets/style.css">
+<?php sn_head('Sombra Nocturna — Tablero de misiones'); ?>
 </head>
-<body>
-<div class="sunrise" aria-hidden="true"></div>
+<body data-result="<?php echo $resultado; ?>" data-complete="<?php echo $completo ? '1' : '0'; ?>">
+<?php sn_fondo(); ?>
 
 <header class="topbar">
-  <img src="assets/escudo-udec.png" alt="Escudo de la Universidad de Cundinamarca">
-  <div>
-    <div class="name">Sombra Nocturna</div>
-    <div class="sub">Validador de banderas CTF</div>
-  </div>
-  <div class="session">
-    <span>Progreso</span>
-    <strong class="role"><?php echo $hechas; ?> / <?php echo $TOTAL; ?></strong>
-    <a class="logout" href="javascript:history.back()">Volver</a>
-    <a class="logout" href="login.php">Salir</a>
-  </div>
+  <?php sn_marca('Validador de banderas CTF'); ?>
+  <span class="hud-clock">⏱ <b data-clock>--:--:--</b></span>
+  <nav class="nav">
+    <span class="agent-chip"><span class="dot"></span><?php echo $rango[1] . ' ' . htmlspecialchars($rango[0]); ?></span>
+    <a href="javascript:history.back()">↩ Volver</a>
+    <a href="info.php">📁 Expediente</a>
+    <?php sn_sonido_btn(); ?>
+    <a href="login.php">⏻ Salir</a>
+  </nav>
 </header>
 
 <main class="main">
-  <h1>Validación de banderas</h1>
+  <h1 class="page-title">Tablero de misiones</h1>
+  <p class="page-kicker">&gt; <span class="typed" data-type="Cada bandera es una pieza de evidencia. Reúne las <?php echo $TOTAL; ?> y el líder caerá."></span></p>
 
-  <section class="panel">
-    <h2>Envía una bandera</h2>
-    <form action="" method="post">
-      <div class="field">
-        <label for="bandera">Bandera</label>
-        <input type="text" id="bandera" name="bandera" placeholder="CTF{...}" autocomplete="off">
+  <section class="hud">
+    <div class="hq">
+      <?php sn_anillo($hechas, $TOTAL, true); ?>
+
+      <div>
+        <h2 class="hud-title"><span class="emoji">🚩</span> Envía una bandera <span class="tag">VALIDADOR</span></h2>
+        <form action="" method="post" class="terminal-form">
+          <div class="input-wrap">
+            <span class="ico">⌨️</span>
+            <label for="bandera" class="sr-only" style="position:absolute;left:-9999px;">Bandera</label>
+            <input type="text" id="bandera" name="bandera" placeholder="CTF{...}" autocomplete="off" autofocus>
+          </div>
+          <button type="submit" class="btn btn-hot">Validar</button>
+        </form>
+
+        <div class="agent-row" style="margin-top:18px;">
+          <div class="mini-agent" id="val-agent" data-agent data-bubble="#val-bubble" data-state="<?php echo $resultado === 'new' ? 'approved' : 'idle'; ?>">
+            <?php sn_agente(); ?>
+          </div>
+          <div class="bubble<?php echo $resultado === '' ? '' : ($feedback_ok ? ' good' : ' bad'); ?>" id="val-bubble" role="status">
+            <span class="who">Agente 007 · Validación</span>
+            <span data-say><?php
+              if ($feedback !== '') {
+                  echo htmlspecialchars($feedback);
+              } else {
+                  echo 'Pega aquí cada evidencia CTF{...} que encuentres. Yo la verifico. 🕵️';
+              }
+            ?></span>
+          </div>
+        </div>
       </div>
-      <button type="submit" class="btn">Validar</button>
-    </form>
 
-    <?php if ($feedback !== ''): ?>
-      <p class="<?php echo $feedback_ok ? 'alert' : 'error'; ?>" role="status">
-        <?php echo htmlspecialchars($feedback); ?>
-      </p>
-    <?php endif; ?>
+      <section class="wanted" style="--blur:<?php echo round(12 * (1 - $hechas / $TOTAL), 1); ?>px;--gray:<?php echo round(1 - $hechas / $TOTAL, 2); ?>;--pct:<?php echo round($hechas / $TOTAL * 100); ?>%">
+        <h3>SE BUSCA</h3>
+        <div class="photo"><?php sn_sospechoso(); ?></div>
+        <?php if ($completo): ?><div class="caught">CAPTURADO</div><?php endif; ?>
+        <div class="sub">IDENTIFICACIÓN: <?php echo round($hechas / $TOTAL * 100); ?>%</div>
+        <div class="meter"><i></i></div>
+      </section>
+    </div>
 
-    <?php if ($hechas === $TOTAL): ?>
-      <p class="alert" role="status">
+    <?php if ($completo): ?>
+      <p class="alert ok" role="status">
         <span class="audit">Has resuelto las <?php echo $TOTAL; ?> banderas. Caso cerrado.</span>
       </p>
     <?php endif; ?>
   </section>
 
-  <?php if ($hechas > 0): ?>
-  <section class="panel" style="margin-top: 28px;">
-    <h2>Retos resueltos</h2>
-    <ul>
-      <?php foreach ($_SESSION['encontradas'] as $h): ?>
-        <li><?php echo htmlspecialchars($BANDERAS[$h]); ?></li>
+  <?php $i = 0; foreach ($SN_FASES as $fase):
+    $hechas_fase = 0;
+    foreach ($fase['retos'] as $r) { if (isset($resueltos[$r[0]])) $hechas_fase++; }
+  ?>
+  <section class="phase">
+    <div class="phase-head">
+      <h2><?php echo $fase['icono'] . ' ' . htmlspecialchars($fase['titulo']); ?></h2>
+      <span class="count">[<?php echo $hechas_fase; ?>/<?php echo count($fase['retos']); ?>]</span>
+      <span class="muted"><?php echo htmlspecialchars($fase['intro']); ?></span>
+    </div>
+    <div class="mission-grid">
+      <?php foreach ($fase['retos'] as $r):
+        $ok = isset($resueltos[$r[0]]);
+        $clases = 'mission' . ($ok ? ' solved' : '') . ($r[0] === $codigo_nuevo ? ' just-solved' : '');
+      ?>
+      <article class="<?php echo $clases; ?>" style="--i:<?php echo $i++; ?>">
+        <div class="m-top">
+          <span class="m-code"><?php echo $r[0]; ?></span>
+          <span class="m-tech"><?php echo htmlspecialchars($r[1]); ?></span>
+        </div>
+        <h3>Operación «<?php echo htmlspecialchars($r[2]); ?>»</h3>
+        <p>El <b>agente 007</b> está en busca de <?php echo htmlspecialchars($r[3]); ?></p>
+        <span class="m-status"><?php echo $ok ? 'EVIDENCIA ASEGURADA' : 'EN CURSO…'; ?></span>
+        <?php if ($ok): ?><span class="m-stamp">RESUELTO</span><?php endif; ?>
+      </article>
       <?php endforeach; ?>
-    </ul>
+    </div>
   </section>
-  <?php endif; ?>
+  <?php endforeach; ?>
 </main>
 
-<footer class="site-footer">
-  <p>&copy; 2026 <strong>Sergio Alexander Prieto Castiblanco</strong> y <strong>Laura Valentina Bautista Vargas</strong>. Todos los derechos reservados.</p>
-  <p>Universidad de Cundinamarca, extensión Chía. Hacking Ético.</p>
-</footer>
+<div class="overlay" id="evidence-ok" role="dialog" aria-label="Evidencia confirmada">
+  <div class="overlay-box" data-agent data-state="idle">
+    <?php sn_agente(); ?>
+    <h2>¡EVIDENCIA CONFIRMADA!</h2>
+    <p><?php echo htmlspecialchars($feedback); ?></p>
+    <span class="stamp green"><?php echo htmlspecialchars($codigo_nuevo); ?> · RESUELTO</span>
+    <p class="hint">(clic para continuar)</p>
+  </div>
+</div>
+
+<div class="overlay" id="case-closed" role="dialog" aria-label="Caso cerrado">
+  <div class="overlay-box" data-agent data-state="idle">
+    <?php sn_agente(); ?>
+    <h2>¡CASO CERRADO!</h2>
+    <p>El líder de Sombra Nocturna ha sido capturado. Reuniste las <?php echo $TOTAL; ?> evidencias.</p>
+    <span class="stamp">CAPTURADO</span>
+    <p class="hint">Rango final: 🏆 Leyenda · (clic para continuar)</p>
+  </div>
+</div>
+
+<?php sn_pie(); ?>
 </body>
 </html>
