@@ -3,6 +3,7 @@
 session_start();
 $progreso = isset($_SESSION['encontradas']) ? count($_SESSION['encontradas']) : 0;
 $TOTAL_BANDERAS = 18;
+require_once 'ui.php';
 
 if (!isset($_GET['role'])) {
     header("Location: login.php");
@@ -45,11 +46,7 @@ if (isset($_GET['q']) && $_GET['q'] !== '') {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sombra Nocturna - Logística</title>
-<link rel="icon" type="image/png" href="assets/escudo-udec.png">
-<link rel="stylesheet" href="assets/style.css">
+<?php sn_head('Sombra Nocturna — Centro de operaciones'); ?>
 </head>
 <body>
 <!--
@@ -57,74 +54,125 @@ if (isset($_GET['q']) && $_GET['q'] !== '') {
   Acceso admin confirmado via panel de mando.
   F04: CTF{f04_bypass_admin_sqli_2026}
 -->
-<div class="sunrise" aria-hidden="true"></div>
+<?php sn_fondo(); $rango = sn_rango($progreso); $pct = round($progreso / $TOTAL_BANDERAS * 100); ?>
 
 <header class="topbar">
-  <img src="assets/escudo-udec.png" alt="Escudo de la Universidad de Cundinamarca">
-  <div>
-    <div class="name">Sombra Nocturna</div>
-    <div class="sub">Portal de mando C3I</div>
-  </div>
-  <div class="session">
-    <span>Sesión activa como</span>
-    <strong class="role"><?php echo htmlspecialchars($_GET['role']); ?></strong>
-    <a class="logout" href="validar.php">Banderas <?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?></a>
-    <a class="logout" href="login.php">Cerrar sesión</a>
-  </div>
+  <?php sn_marca('Centro de operaciones'); ?>
+  <span class="hud-clock">⏱ <b data-clock>--:--:--</b></span>
+  <nav class="nav">
+    <span class="agent-chip"><span class="dot"></span>Sesión: <strong class="role"><?php echo htmlspecialchars($_GET['role']); ?></strong></span>
+    <a href="info.php">📁 Expediente</a>
+    <a class="nav-hot" href="validar.php">🚩 Banderas <?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?></a>
+    <?php sn_sonido_btn(); ?>
+    <a href="login.php">⏻ Cerrar sesión</a>
+  </nav>
 </header>
 
+<div class="ticker" aria-hidden="true">
+  <span class="ticker-tag">INTERCEPTADO</span>
+  <div class="ticker-track">
+    <span>» Envío ENV-2026-0472 desviado a bodega 7 «</span>
+    <span>» "El pájaro vuela a las 03:00" — remitente desconocido «</span>
+    <span>» Contenedor MSCU en tránsito · ruta sin confirmar «</span>
+    <span>» Alerta: actividad inusual en el portal de logística «</span>
+    <span>» Envío ENV-2026-0472 desviado a bodega 7 «</span>
+    <span>» "El pájaro vuela a las 03:00" — remitente desconocido «</span>
+    <span>» Contenedor MSCU en tránsito · ruta sin confirmar «</span>
+    <span>» Alerta: actividad inusual en el portal de logística «</span>
+  </div>
+</div>
+
 <main class="main">
-  <h1>Panel de operaciones de logística</h1>
+  <h1 class="page-title">Panel de operaciones de logística</h1>
+  <p class="page-kicker">&gt; <span class="typed" data-type="Agente 007 conectado. El cartel mueve su carga desde aquí… revisa cada rincón."></span></p>
 
-  <div class="layout">
+  <div class="ops-grid">
 
-    <section class="panel">
-      <h2>Cargar fotografías de entregas y manifiestos</h2>
-      <form action="" method="post" enctype="multipart/form-data">
-        <label class="dropzone">
-          <input type="file" name="fileToUpload">
-        </label>
-        <button type="submit" class="btn" name="submit" value="Enviar Archivo">Enviar archivo</button>
-      </form>
+    <div class="stack">
+      <section class="hud">
+        <h2 class="hud-title"><span class="emoji">📤</span> Cargar fotografías de entregas y manifiestos <span class="tag">UPLOAD</span></h2>
+        <form action="" method="post" enctype="multipart/form-data">
+          <label class="dropzone">
+            <span class="dz-icon">🗂️</span>
+            <span class="dz-text">Arrastra aquí la evidencia o elige un archivo</span>
+            <input type="file" name="fileToUpload">
+          </label>
+          <button type="submit" class="btn btn-auto" name="submit" value="Enviar Archivo">🚀 Enviar archivo</button>
+        </form>
 
-      <?php if ($message !== ''): ?>
-        <p class="alert" role="status"><?php echo $message; ?></p>
-      <?php endif; ?>
-    </section>
+        <?php if ($message !== ''): ?>
+          <p class="alert" role="status"><?php echo $message; ?></p>
+        <?php endif; ?>
+      </section>
 
-    <aside class="files">
-      <h2>Archivos disponibles</h2>
-      <ul>
-        <li>
-          <a href="uploads/evidencia_envio.jpg">Foto de inspección 1</a>
-          <span class="ext">JPG</span>
-        </li>
-        <li>
-          <a href="uploads/manifiesto_alpha.jpg">Manifiesto fotográfico Alpha</a>
-          <span class="ext">JPG</span>
-        </li>
-      </ul>
+      <section class="hud">
+        <h2 class="hud-title"><span class="emoji">🛰️</span> Buscar manifiesto por código de envío <span class="tag">RASTREO</span></h2>
+        <form method="get" class="search-row">
+          <div class="input-wrap">
+            <span class="ico">🔍</span>
+            <input type="text" name="q" placeholder="Ej: ENV-2026-0472" value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>">
+          </div>
+          <input type="hidden" name="role" value="<?php echo htmlspecialchars($_GET['role']); ?>">
+          <button type="submit" class="btn">Rastrear</button>
+        </form>
+        <?php if ($search_result !== ''): ?>
+          <p class="alert" role="status"><?php echo $search_result; ?></p>
+        <?php endif; ?>
+      </section>
+
+      <section class="hud">
+        <h2 class="hud-title"><span class="emoji">📸</span> Archivos disponibles <span class="tag">EVIDENCIAS</span></h2>
+        <div class="evidence-list" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+          <a class="polaroid" href="uploads/evidencia_envio.jpg">
+            <span class="pin"></span>
+            <img src="uploads/evidencia_envio.jpg" alt="" loading="lazy">
+            <span class="ev-tag">EVIDENCIA #1</span>
+            <span class="cap"><span>Foto de inspección 1</span><span>JPG</span></span>
+          </a>
+          <a class="polaroid" href="uploads/manifiesto_alpha.jpg">
+            <span class="pin"></span>
+            <img src="uploads/manifiesto_alpha.jpg" alt="" loading="lazy">
+            <span class="ev-tag">EVIDENCIA #2</span>
+            <span class="cap"><span>Manifiesto fotográfico Alpha</span><span>JPG</span></span>
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <aside class="stack">
+      <section class="hud rank-card">
+        <?php sn_anillo($progreso, $TOTAL_BANDERAS); ?>
+        <div>
+          <div class="muted">Tu rango</div>
+          <div class="rank-name"><?php echo $rango[1] . ' ' . htmlspecialchars($rango[0]); ?></div>
+          <div class="muted">Cada bandera te acerca al líder.</div>
+        </div>
+      </section>
+
+      <section class="wanted" style="--blur:<?php echo round(12 * (1 - $progreso / $TOTAL_BANDERAS), 1); ?>px;--gray:<?php echo round(1 - $progreso / $TOTAL_BANDERAS, 2); ?>;--pct:<?php echo $pct; ?>%">
+        <h3>SE BUSCA</h3>
+        <div class="sub">LÍDER DE "SOMBRA NOCTURNA"</div>
+        <div class="photo"><?php sn_sospechoso(); ?></div>
+        <?php if ($progreso >= $TOTAL_BANDERAS): ?><div class="caught">CAPTURADO</div><?php endif; ?>
+        <div class="sub">IDENTIFICACIÓN: <?php echo $pct; ?>%</div>
+        <div class="meter"><i></i></div>
+        <div class="reward">RECOMPENSA: 18 BANDERAS</div>
+      </section>
     </aside>
 
   </div>
-
-  <section class="panel" style="margin-top: 28px;">
-    <h2>Buscar manifiesto por código de envío</h2>
-    <form method="get" class="field">
-      <input type="text" name="q" placeholder="Ej: ENV-2026-0472" value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>">
-      <input type="hidden" name="role" value="<?php echo htmlspecialchars($_GET['role']); ?>">
-      <button type="submit" class="btn" style="width:auto; margin-top:12px;">Buscar</button>
-    </form>
-    <?php if ($search_result !== ''): ?>
-      <p class="alert" role="status"><?php echo $search_result; ?></p>
-    <?php endif; ?>
-  </section>
-
 </main>
 
-<footer class="site-footer">
-  <p>&copy; 2026 <strong>Sergio Alexander Prieto Castiblanco</strong> y <strong>Laura Valentina Bautista Vargas</strong>. Todos los derechos reservados.</p>
-  <p>Universidad de Cundinamarca, extensión Chía. Hacking Ético.</p>
-</footer>
+<div class="overlay" id="welcome" role="dialog" aria-label="Acceso concedido">
+  <div class="overlay-box" data-agent data-state="idle">
+    <?php sn_agente(); ?>
+    <h2>ACCESO CONCEDIDO</h2>
+    <p>Bienvenido, agente <strong style="color:var(--orange)"><?php echo htmlspecialchars($_GET['role']); ?></strong>. Estás dentro.</p>
+    <span class="stamp green">APROBADO</span>
+    <p class="hint">(clic para continuar)</p>
+  </div>
+</div>
+
+<?php sn_pie(); ?>
 </body>
 </html>

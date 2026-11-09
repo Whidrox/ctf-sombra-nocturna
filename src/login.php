@@ -5,6 +5,7 @@ $progreso = isset($_SESSION['encontradas']) ? count($_SESSION['encontradas']) : 
 $TOTAL_BANDERAS = 18;
 
 require_once 'db.php';
+require_once 'ui.php';
 
 $message = '';
 
@@ -28,57 +29,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sombra Nocturna - Portal de Mando</title>
-<link rel="icon" type="image/png" href="assets/escudo-udec.png">
-<link rel="stylesheet" href="assets/style.css">
+<?php sn_head('Sombra Nocturna — Acceso de agentes'); ?>
 </head>
 <body>
-<div class="sunrise" aria-hidden="true"></div>
+<?php sn_fondo(); ?>
 
 <main class="auth">
-  <div class="auth-card">
+  <div class="auth-shell">
 
-    <section class="auth-intro">
-      <img class="crest" src="assets/escudo-udec.png" alt="Escudo de la Universidad de Cundinamarca">
-      <h1>Sombra Nocturna</h1>
-      <p class="subtitle">Portal de mando C3I</p>
-    </section>
+    <div class="auth-top">
+      <?php sn_marca('Portal de mando C3I'); ?>
+      <div class="digits" aria-hidden="true">
+        <span>CASO</span><span class="hot">#SN-2026</span><span>·</span><span data-digits>000000</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="hud-clock">HORA LOCAL <b data-clock>--:--:--</b></span>
+        <?php sn_sonido_btn(); ?>
+      </div>
+    </div>
 
-    <section class="auth-form">
-      <h2>Acceso operativo</h2>
-      <p class="help">Ingresa con el usuario y la clave asignados a tu unidad.</p>
+    <div class="hud auth-card">
 
-      <form method="POST">
-        <div class="field">
-          <label for="username">Usuario operativo</label>
-          <input type="text" id="username" name="username" placeholder="Usuario operativo" autocomplete="username">
+      <section class="auth-left">
+        <div class="bubble" role="status" aria-live="polite"><span class="who">Agente 007 · Guardián</span><span data-say></span></div>
+        <div class="radar-stage" id="login-agent" data-agent data-state="idle" data-mood="idle">
+          <svg class="radar" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="r1" cx="100" cy="100" r="97" fill="none" stroke="rgba(34,211,238,.45)" stroke-width="1.2" stroke-dasharray="2 5"/>
+            <g class="r2">
+              <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(251,146,60,.85)" stroke-width="4" stroke-dasharray="26 40 8 30 40 60 14 52"/>
+            </g>
+            <g class="r3">
+              <circle cx="100" cy="100" r="74" fill="none" stroke="rgba(59,130,246,.8)" stroke-width="7" stroke-dasharray="6 6 6 6 6 30 40 120"/>
+            </g>
+            <circle cx="100" cy="100" r="64" fill="none" stroke="rgba(34,211,238,.25)" stroke-width="1"/>
+            <path d="M100 0 V14 M100 186 V200 M0 100 H14 M186 100 H200" stroke="var(--cyan)" stroke-width="2"/>
+          </svg>
+          <div class="radar-sweep"></div>
+          <?php sn_agente(); ?>
         </div>
-        <div class="field">
-          <label for="password">Clave de encriptación</label>
-          <input type="password" id="password" name="password" placeholder="Clave de encriptación" autocomplete="current-password">
+      </section>
+
+      <section class="auth-right">
+        <h1>ACCESO <span class="accent">OPERATIVO</span></h1>
+        <div class="mission-strip"><span class="fp">🕵️</span><span>El agente 007 está en busca del líder de la red <b>Sombra Nocturna</b>. Infíltrate en su portal.</span></div>
+
+        <form method="POST" id="login-form"<?php echo $message !== '' ? ' data-login-error' : ''; ?>>
+          <div class="field">
+            <label for="username">Usuario operativo</label>
+            <div class="input-wrap">
+              <span class="ico">👤</span>
+              <input type="text" id="username" name="username" placeholder="Nombre en clave" autocomplete="username">
+            </div>
+          </div>
+          <div class="field">
+            <label for="password">Clave de encriptación</label>
+            <div class="input-wrap">
+              <span class="ico">🔐</span>
+              <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password">
+            </div>
+          </div>
+          <button type="submit" class="btn">🔎 Ingresar al sistema</button>
+          <div class="scanbar" aria-hidden="true"><i></i></div>
+        </form>
+
+        <?php if ($message !== ''): ?>
+          <p class="error" role="alert"><?php echo $message; ?></p>
+        <?php endif; ?>
+
+        <div class="quick-links">
+          <a href="info.php">📁 Expediente del caso</a>
+          <a href="validar.php">🚩 Banderas (<?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?>)</a>
         </div>
-        <button type="submit" class="btn">Ingresar al sistema</button>
-      </form>
+      </section>
 
-      <?php if ($message !== ''): ?>
-        <p class="error" role="alert"><?php echo $message; ?></p>
-      <?php endif; ?>
-    </section>
-
+    </div>
   </div>
 </main>
 
-<footer class="site-footer">
-  <p>&copy; 2026 <strong>Sergio Alexander Prieto Castiblanco</strong> y <strong>Laura Valentina Bautista Vargas</strong>. Todos los derechos reservados.</p>
-  <p>Universidad de Cundinamarca, extensión Chía. Hacking Ético.</p>
-</footer>
-
-<div style="position:fixed;right:20px;bottom:20px;z-index:50;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-  <a href="info.php" style="padding:12px 18px;background:#0a1f44;color:#e4ecf7;border:1px solid #38bdf8;font-weight:700;border-radius:6px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.4);">Sobre el reto</a>
-  <a href="validar.php" style="padding:12px 18px;background:#38bdf8;color:#04121f;font-weight:700;border-radius:6px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.4);">Validar banderas (<?php echo $progreso; ?>/<?php echo $TOTAL_BANDERAS; ?>)</a>
-</div>
-
+<?php sn_pie(); ?>
 </body>
 </html>
