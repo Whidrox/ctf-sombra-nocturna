@@ -5,24 +5,24 @@ require_once 'ui.php';
 
 // Hashes SHA-256 de las 18 banderas (no se guardan en texto plano).
 $BANDERAS = [
-    '9594aa0972bd5eac1e38f6d8f81ce3ead604d84977c5e6f4dac7e18f816689f4' => 'F01 — Reconocimiento pasivo (pcap)',
-    '56960143e50072ef1d646b5860fbcb148df07394949c8b3e17676f4c031a815d' => 'F02 — Banner FTP',
-    '5a2b98c99ee7a74615a7bed9795cdd25fcd469c3902ba7f6da1f42cfd20fb2b2' => 'F03 — Ruta oculta (robots.txt)',
-    '5032f1894f16849fdb9b0dd8d83b8990527a9211991b12f1ce78ac04ab991325' => 'F04 — Bypass login (SQLi)',
-    '5cb66132cf201bb477eae8b01cd93c3c80ac5feb04812c95a191cd53f06138ea' => 'F05 — UNION-based SQLi',
-    '7728f27cb90cd82ec6688ac34eb0214c93551a3922d469554c724604b1f6f01c' => 'F06 — Metadatos EXIF',
-    'a6445ec64a76443e40b14d21080a6b52b5648c2b8b20203c795680263cae5673' => 'F07 — Bypass de extensión',
-    '60c2991e97195802055f168f44fcb510d87a2346111db483e3a216b3033ee792' => 'F08 — RCE confirmado',
-    'acbb2c7876cae05d55addfe950c7ef2cc02b5673e6160e32668f6086320b96ab' => 'F09 — Bandera de usuario',
-    '10aaeacfc8d49ba8d8229afcd8bb4fb4e3757b63a4424d75fade21de255c1465' => 'F10 — Fuga FTP (.env.bak)',
-    'ba656b626c28f210d9f3e38bc00c5af2453c1ea6c68e65dc75055ea5c2c5857e' => 'F11 — Cron inseguro',
-    '1c48d15cb2dafe0d9608d3bc19e37504ee136815d186fe5c8c89245fe2c1530c' => 'F12 — Variable de entorno',
-    '67dfcabd546e445ee7c91573c2b055e57b0590d3a888e3444dbf5c21e0b3641a' => 'F13 — Binario SUID',
-    'fc9e2135d0208a5c0162a3e97e2dc6c187e596f2eb4a0b73199e26ef4533997f' => 'F14 — Root vía SUID (vim)',
-    '8029863cb9a6a66583b3344117dc0be0e13a20e6e3c3e43bf20ce88a449ce1f8' => 'F15 — Registro final (base64)',
-    '0dea757d3c7fd3e3602b11d307dfee73fb4300289e07e4d538cdce96a63a8211' => 'F16 — SSH credenciales débiles',
-    '26e946eadcc50a7839b9d73e11f7d9a3e6bc7db6f174b162713c27ba8dfd6e25' => 'F17 — XSS reflejado',
-    'd3502c9b93a14f3083263ef81b15f40ec3252853a80d3842e626a68fcee6ac5a' => 'F18 — Escape socket Docker',
+    '5d915caa9d6b20182069d4b37f7ab213b0bc8c345bcfab66f6d8a0fe34319c46' => 'F01 — Reconocimiento pasivo (pcap)',
+    'a44d9464b0039722c24bca004b9c6c59c05445458bc0de024328451481b4d1d2' => 'F02 — Banner FTP',
+    '6b508a5fc94c2f50f0db64c9dffbe100976e20b6ba24b5128b077382703c9dd9' => 'F03 — Ruta oculta (robots.txt)',
+    '0ce359c5fb54833de63aaf2cf3c5c5f49edb4dfabe1dfb9a019c07a5e5cb3ff9' => 'F04 — Bypass login (SQLi)',
+    'd784dd938661c4219becf616b8a941f69a7a70c26037a8ef9441857b7e393dcf' => 'F05 — UNION-based SQLi',
+    'be24d7fa2c625ee9267fddad317862a7f37bfb8d2a13aab8ee542a5ee4bb9ef9' => 'F06 — Metadatos EXIF',
+    '1d69460511382c33df8e72d880134f9b7b0fa954db8656cdde6cbecc2dc010da' => 'F07 — Bypass de extensión',
+    'ffc051f7a3ea4301049affbf585412fef87d3de75438ec26f27a78453b6967b6' => 'F08 — RCE confirmado',
+    '92394f271f0fdc7786a5f2f926d33a1249cd7df4bde43af8890917092a1c630c' => 'F09 — Bandera de usuario',
+    'c0755843a7b5119c449f4b623f956feb0d16a715af9910ddfeb32a62d8ee244e' => 'F10 — Fuga FTP (.env.bak)',
+    'be42eefad0e4e933753a295030a09d2e7494e81f1bd24a5ba0c63e41a383fb70' => 'F11 — Cron inseguro',
+    'be1c75d093817013883edfe703af8116e6d903d84915733d2f7bd67519031ba7' => 'F12 — Variable de entorno',
+    '32ddf010de4db31aaa64bdcce362f65fc6debeccecf2cb1e8923c3c2e268e998' => 'F13 — Binario SUID',
+    '101cb9e9525cc1abf0c9d74389b502707960f08bfe0b33e11bd3d7baa9d22b3c' => 'F14 — Root vía SUID (vim)',
+    '5915be5058c8c16561e94e0366538fcac004863fdc3e26ab277f3e7ca13b1b67' => 'F15 — Registro final (base64)',
+    '9e6e2e97ade333d1def51309430e0baa3f6cb6b882b39bc2c03474c83efae8e0' => 'F16 — SSH credenciales débiles',
+    '481f26629a1436721717fbaae9e8607f3da43360e65510f3c951cf011fa90820' => 'F17 — XSS reflejado',
+    '744086ba3475a6ec62412a73e11a2357744abe9e3ac31cc86398e17ff6cf7a07' => 'F18 — Escape socket Docker',
 ];
 
 $TOTAL = count($BANDERAS);
@@ -56,7 +56,7 @@ if (isset($_POST['bandera'])) {
                 $codigo_nuevo = substr($reto, 0, 3);
             }
         } else {
-            $feedback = 'Bandera incorrecta. Verifica el formato CTF{...} y vuelve a intentarlo.';
+            $feedback = 'Bandera incorrecta. Verifica el formato {...} y vuelve a intentarlo.';
             $resultado = 'bad';
         }
     }
@@ -106,7 +106,7 @@ $completo = ($hechas === $TOTAL);
           <div class="input-wrap">
             <span class="ico">⌨️</span>
             <label for="bandera" class="sr-only" style="position:absolute;left:-9999px;">Bandera</label>
-            <input type="text" id="bandera" name="bandera" placeholder="CTF{...}" autocomplete="off" autofocus>
+            <input type="text" id="bandera" name="bandera" placeholder="{...}" autocomplete="off" autofocus>
           </div>
           <button type="submit" class="btn btn-hot">Validar</button>
         </form>
@@ -121,7 +121,7 @@ $completo = ($hechas === $TOTAL);
               if ($feedback !== '') {
                   echo htmlspecialchars($feedback);
               } else {
-                  echo 'Pega aquí cada evidencia CTF{...} que encuentres. Yo la verifico. 🕵️';
+                  echo 'Pega aquí cada evidencia {...} que encuentres. Yo la verifico. 🕵️';
               }
             ?></span>
           </div>

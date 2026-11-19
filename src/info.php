@@ -67,7 +67,7 @@ $rango = sn_rango($progreso);
   <section class="hud">
     <h2 class="hud-title"><span class="emoji">📊</span> Datos del operativo <span class="tag">INTEL</span></h2>
     <div class="stats">
-      <div class="stat"><b data-count-to="<?php echo $TOTAL_BANDERAS; ?>">0</b><span>evidencias <code>CTF{...}</code></span></div>
+      <div class="stat"><b data-count-to="<?php echo $TOTAL_BANDERAS; ?>">0</b><span>evidencias <code>{...}</code></span></div>
       <div class="stat"><b data-count-to="<?php echo count($SN_FASES); ?>">0</b><span>fases de operación</span></div>
       <div class="stat"><b data-count-to="<?php echo $num_categorias; ?>">0</b><span>técnicas ofensivas</span></div>
       <div class="stat"><b data-count-to="<?php echo $progreso; ?>">0</b><span>ya aseguradas por ti</span></div>

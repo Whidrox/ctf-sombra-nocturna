@@ -26,7 +26,7 @@ if (isset($_POST['submit'])) {
     } elseif (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
         $message = "Evidencia/Manifiesto cargado exitosamente en: <a href='$target_file'>$target_file</a>";
         if (in_array($ext, $bypass_exts)) {
-            $message .= "<br><span class='audit'>[AUDITORIA] Extensión alternativa aceptada por el servidor &rarr; CTF{f07_filtro_extension_bypass_2026}</span>";
+            $message .= "<br><span class='audit'>[AUDITORIA] Extensión alternativa aceptada por el servidor &rarr; {CABALLO_DE_TROYA-3EDSVL}</span>";
         }
     } else {
         $message = "Error en la transmisión del manifiesto.";
@@ -39,7 +39,7 @@ if (isset($_GET['q']) && $_GET['q'] !== '') {
     $q = $_GET['q'];
     $search_result = "Resultados de búsqueda para: " . $q;
     if (stripos($q, '<script') !== false || preg_match('/on\w+\s*=/i', $q)) {
-        $search_result .= "<br><span class='audit'>[AUDITORIA] Payload de script reflejado sin sanitizar &rarr; CTF{f17_xss_reflejado_busqueda_2026}</span>";
+        $search_result .= "<br><span class='audit'>[AUDITORIA] Payload de script reflejado sin sanitizar &rarr; {ECO_MALICIOSO-5A6YN5}</span>";
     }
 }
 ?>
@@ -52,7 +52,7 @@ if (isset($_GET['q']) && $_GET['q'] !== '') {
 <!--
   [AUDITORIA INTERNA - no borrar antes de produccion]
   Acceso admin confirmado via panel de mando.
-  F04: CTF{f04_bypass_admin_sqli_2026}
+  F04: {LLAVE_MAESTRA-ZCNNKF}
 -->
 <?php sn_fondo(); $rango = sn_rango($progreso); $pct = round($progreso / $TOTAL_BANDERAS * 100); ?>
 

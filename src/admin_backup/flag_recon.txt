@@ -1,4 +1,4 @@
 [BACKUP ANTIGUO - PANEL ADMIN v1.0 - DEPRECATED]
 Este directorio quedo expuesto tras una migracion incompleta del portal.
 
-CTF{f03_ruta_oculta_robots_2026}
+{MAPA_DEL_TESORO-5NW4NS}

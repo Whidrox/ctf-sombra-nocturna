@@ -23,4 +23,4 @@ CREATE TABLE IF NOT EXISTS operaciones (
 );
 
 INSERT INTO operaciones (flag, detalle, estado) VALUES
-('CTF{f05_union_dump_operaciones_2026}', 'Envio_Lote_0472_Cali-Chia', 'activo');
+('{ARCHIVO_NEGRO-61GD11}', 'Envio_Lote_0472_Cali-Chia', 'activo');

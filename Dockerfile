@@ -38,7 +38,7 @@ RUN sed -i 's/Listen 80/Listen 8082/' /etc/apache2/ports.conf && \
     echo '    SetHandler application/x-httpd-php' >> /etc/apache2/conf-available/php-alt-ext.conf && \
     echo '</FilesMatch>' >> /etc/apache2/conf-available/php-alt-ext.conf && \
     a2enconf php-alt-ext && \
-    echo 'Header always set X-Internal-Note "CTF{f01_recon_passivo_pcap_2026}"' \
+    echo 'Header always set X-Internal-Note "{OIDO_FINO-DD0IMIHVDVHLN7ZJ1XFW}"' \
       >> /etc/apache2/sites-available/000-default.conf
 
 # -----------------------------------------------------------------------
@@ -70,7 +70,7 @@ RUN service mariadb start && \
 # -----------------------------------------------------------------------
 RUN exiftool -Comment="PISTA_EXIF: El directorio de uploads permite ejecucion de scripts .php" \
     -Artist="Operador_Alpha_Chia" /var/www/html/uploads/evidencia_envio.jpg || true && \
-    exiftool -Comment="CTF{f06_exif_manifiesto_alpha_2026}" \
+    exiftool -Comment="{FOTO_DELATORA-1MRLPH}" \
     -Artist="Operador_Beta_Logistica" /var/www/html/uploads/manifiesto_alpha.jpg || true
 
 # -----------------------------------------------------------------------
@@ -78,15 +78,15 @@ RUN exiftool -Comment="PISTA_EXIF: El directorio de uploads permite ejecucion de
 # -----------------------------------------------------------------------
 RUN chown -R www-data:www-data /var/www/html/uploads && \
     chmod 777 /var/www/html/uploads && \
-    echo "CTF{user_flag_sqli_exif_bypass_2026}" > /var/www/user.txt && \
+    echo "{PRIMER_TOPO-65IC74}" > /var/www/user.txt && \
     chmod 644 /var/www/user.txt && \
-    echo "CTF{root_flag_cartel_takeover_2026}" > /root/root.txt && \
+    echo "{TRONO_VACIO-VPAT9Z}" > /root/root.txt && \
     chmod 600 /root/root.txt && \
     chmod 644 /var/www/html/.env.bak && \
     chmod -R 755 /var/www/html/admin_backup
 
 # F08 - confirmación de RCE
-RUN echo "CTF{f08_rce_confirmado_2026}" > /var/www/.rce_confirmed && \
+RUN echo "{CONTROL_REMOTO-J6Q3IE}" > /var/www/.rce_confirmed && \
     chown www-data:www-data /var/www/.rce_confirmed && \
     chmod 644 /var/www/.rce_confirmed
 
@@ -94,7 +94,7 @@ RUN echo "CTF{f08_rce_confirmado_2026}" > /var/www/.rce_confirmed && \
 # 6. Usuarios: operador (F11), operador_ftp (F10), tecnico_soporte (F16)
 # -----------------------------------------------------------------------
 RUN useradd -m -s /bin/bash operador && \
-    echo "CTF{f11_cron_operador_2026}" > /home/operador/flag_f11.txt && \
+    echo "{RELOJ_SUIZO-4E6OQ3}" > /home/operador/flag_f11.txt && \
     chown operador:operador /home/operador/flag_f11.txt && \
     chmod 600 /home/operador/flag_f11.txt
 
@@ -104,13 +104,13 @@ RUN echo "/usr/sbin/nologin" >> /etc/shells
 
 RUN useradd -m -s /usr/sbin/nologin operador_ftp && \
     echo "operador_ftp:L0g1st1c4_2026!" | chpasswd && \
-    echo "CTF{f10_env_bak_ftp_leak_2026}" > /home/operador_ftp/config_leak_flag.txt && \
+    echo "{LLAVERO_OLVIDADO-BQODQ9}" > /home/operador_ftp/config_leak_flag.txt && \
     chown operador_ftp:operador_ftp /home/operador_ftp/config_leak_flag.txt && \
     chmod 644 /home/operador_ftp/config_leak_flag.txt
 
 RUN useradd -m -s /bin/bash tecnico_soporte && \
     echo "tecnico_soporte:T3cn1c0_S0p0rt3_2026!" | chpasswd && \
-    echo "CTF{f16_ssh_weak_creds_2026}" > /home/tecnico_soporte/flag_f16.txt && \
+    echo "{CONTRASENA_DE_CAJON-KBB3Z9}" > /home/tecnico_soporte/flag_f16.txt && \
     chown tecnico_soporte:tecnico_soporte /home/tecnico_soporte/flag_f16.txt && \
     chmod 600 /home/tecnico_soporte/flag_f16.txt
 
@@ -128,7 +128,7 @@ RUN { \
       echo 'pasv_enable=YES'; \
       echo 'pasv_min_port=21100'; \
       echo 'pasv_max_port=21110'; \
-      echo 'ftpd_banner=Sombra Nocturna FTP - acceso restringido - CTF{f02_banner_ftp_c2_2026}'; \
+      echo 'ftpd_banner=Sombra Nocturna FTP - acceso restringido - {PUERTA_TRASERA-G8DZJQ}'; \
       echo 'userlist_enable=NO'; \
     } > /etc/vsftpd.conf
 
@@ -144,12 +144,12 @@ RUN chmod 644 /etc/cron.d/sombra-cron
 # -----------------------------------------------------------------------
 # 9. Variable de entorno (F12)
 # -----------------------------------------------------------------------
-ENV WALLET_KEY="CTF{f12_wallet_env_leak_2026}"
+ENV WALLET_KEY="{BOVEDA_INVISIBLE-1V0O2I}"
 
 # -----------------------------------------------------------------------
 # 10. SUID: flagsuid (F13, copia de cat) y vim-suid (F14, shell root real)
 # -----------------------------------------------------------------------
-RUN echo "CTF{f13_suid_flagsuid_2026}" > /root/f13_flag.txt && chmod 600 /root/f13_flag.txt && \
+RUN echo "{SELLO_FALSO-ICPA4Q}" > /root/f13_flag.txt && chmod 600 /root/f13_flag.txt && \
     cp /bin/cat /usr/bin/flagsuid && chmod u+s /usr/bin/flagsuid
 
 RUN cp /usr/bin/vim.tiny /usr/bin/vim-suid && \
@@ -158,7 +158,7 @@ RUN cp /usr/bin/vim.tiny /usr/bin/vim-suid && \
 # -----------------------------------------------------------------------
 # 11. Registro final en base64 (F15), solo legible por root
 # -----------------------------------------------------------------------
-RUN echo "T1BFUkFDSU9OIFNPTUJSQSBOT0NUVVJOQSAtIFJFR0lTVFJPIEZJTkFMClByb3hpbW8gZW52aW86IGNvbnRlbmVkb3IgTVNDVS03NzQyMDEsIHB1ZXJ0byBCdWVuYXZlbnR1cmEsIDAzOjAwIEFNLgpDb25maXJtYWNpb24gZGUgcnV0YTogQ1RGe2YxNV9jYXNvX2NlcnJhZG9fZW52aW9fZmluYWxfMjAyNn0K" \
+RUN echo "T1BFUkFDSU9OIFNPTUJSQSBOT0NUVVJOQSAtIFJFR0lTVFJPIEZJTkFMClByb3hpbW8gZW52aW86IGNvbnRlbmVkb3IgTVNDVS03NzQyMDEsIHB1ZXJ0byBCdWVuYXZlbnR1cmEsIDAzOjAwIEFNLgpDb25maXJtYWNpb24gZGUgcnV0YToge1VMVElNT19NRU5TQUpFLU9ESldBTH0K" \
       > /root/.operacion_final.log && chmod 600 /root/.operacion_final.log
 
 # -----------------------------------------------------------------------

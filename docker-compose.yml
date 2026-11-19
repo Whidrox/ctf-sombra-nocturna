@@ -25,7 +25,7 @@ services:
     volumes:
       - sombra_vault:/data
     command: >
-      sh -c "echo 'CTF{f18_docker_socket_escape_2026}' > /data/flag_f18.txt && chmod 644 /data/flag_f18.txt"
+      sh -c "echo '{FUGA_DE_LA_JAULA-1G4KMC}' > /data/flag_f18.txt && chmod 644 /data/flag_f18.txt"
     restart: "no"
 
 networks:
